@@ -1,0 +1,58 @@
+{
+	"name": "battery-api",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"start": "npm-run-all build serve",
+		"build": "npm-run-all clean transpile",
+		"serve": "node ./api/index",
+		"transpile": "babel ./src --out-dir api",
+		"clean": "rimraf dist",
+		"watch": "nodemon"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"nodemonConfig": {
+		"exec": "npm run start",
+		"watch": [
+			"src/*",
+			"public/*"
+		],
+		"ignore": [
+			"**/__tests__/**",
+			"*.test.js",
+			"*.spec.js"
+		]
+	},
+	"dependencies": {
+		"@babel/cli": "^7.14.3",
+		"@babel/core": "^7.14.3",
+		"@babel/preset-env": "^7.14.4",
+		"@google-cloud/storage": "^5.8.5",
+		"config": "^3.3.6",
+		"cors": "^2.8.5",
+		"express": "^4.17.1",
+		"firebase-admin": "^9.9.0",
+		"moment": "^2.29.1",
+		"mongoose": "^5.12.14",
+		"npm-run-all": "^4.1.5",
+		"rimraf": "^3.0.2"
+	},
+	"devDependencies": {
+		"nodemon": "^2.0.4"
+	},
+	"babel": {
+		"presets": [
+			[
+				"@babel/preset-env",
+				{
+					"targets": {
+						"esmodules": true
+					}
+				}
+			]
+		]
+	}
+}
