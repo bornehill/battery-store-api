@@ -152,6 +152,19 @@ inventoryModel.geyByLocation = (location) => {
 	return inventoryModel.find({ location });
 };
 
+inventoryModel.inputOutput = async ({ products, location, typeMov }) => {
+	for (var mov of products) {
+		const amount = typeMov === "1" ? +mov.amount : +mov.amount * -1;
+
+		await inventoryModel.updateInventory({
+			product: mov.product,
+			location,
+			amount,
+		});
+	}
+	return "Success";
+};
+
 inventoryModel.updateInventory = async ({
 	product: prod,
 	location,

@@ -138,6 +138,20 @@ router
 			);
 		}
 	})
+	.put("/inventory", isAuthenticated, async (req, res) => {
+		try {
+			const saved = await inventoryModel.inputOutput({ ...req.body });
+			console.log(saved);
+			ApiResponse.Created(res, saved, "Process performed successfully");
+		} catch (err) {
+			console.log(err);
+			ApiResponse.InternalServerError(
+				res,
+				err,
+				"Got error in Input/Output Inventory"
+			);
+		}
+	})
 	.get("/order/:orderId", isAuthenticated, async (req, res) => {
 		try {
 			const order = await orderModel.searchByOrderId(req.params.orderId);

@@ -9,18 +9,18 @@ export default {
 					// 	icon: "FaCashRegister",
 					// 	path: "/cash",
 					// },
-					// {
-					// 	id: 2,
-					// 	label: "Entradas/Salidas",
-					// 	icon: "AiFillEdit",
-					// 	path: "/",
-					// },
-					// {
-					// 	id: 3,
-					// 	label: "Inventario",
-					// 	icon: "FaClipboardList",
-					// 	path: "/",
-					// },
+					{
+						id: 2,
+						label: "Entradas/Salidas",
+						icon: "AiFillEdit",
+						path: "/inventorymov",
+					},
+					{
+						id: 3,
+						label: "Inventario",
+						icon: "FaClipboardList",
+						path: "/inventory",
+					},
 					{
 						id: 4,
 						label: "Productos",
