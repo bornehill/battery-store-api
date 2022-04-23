@@ -9,6 +9,7 @@ import {
 	orderModel,
 	productModel,
 	noteModel,
+	employeeModel,
 } from "../repository/connect";
 
 const router = express.Router();
@@ -152,6 +153,18 @@ router
 			);
 		}
 	})
+	.get("/order", isAuthenticated, async (req, res) => {
+		try {
+			const orders = await orderModel.getOrders(req.query);
+			ApiResponse.Ok(res, orders, "Process performed successfully");
+		} catch (err) {
+			ApiResponse.InternalServerError(
+				res,
+				err,
+				"Got error in Get Orders by filter"
+			);
+		}
+	})
 	.get("/order/:orderId", isAuthenticated, async (req, res) => {
 		try {
 			const order = await orderModel.searchByOrderId(req.params.orderId);
@@ -213,6 +226,31 @@ router
 			ApiResponse.Created(res, saved, "Process performed successfully");
 		} catch (err) {
 			ApiResponse.InternalServerError(res, err, "Got error in Add Note");
+		}
+	})
+	.get("/employee", isAuthenticated, async (req, res) => {
+		try {
+			const employees = await employeeModel.getAll();
+			ApiResponse.Ok(res, employees, "Process performed successfully");
+		} catch (err) {
+			ApiResponse.InternalServerError(res, err, "Got error in Get employees");
+		}
+	})
+	.post("/employee", isAuthenticated, async (req, res) => {
+		try {
+			const employee = employeeModel({ ...req.body });
+			const saved = await employeeModel.addEmployee(employee);
+			ApiResponse.Created(res, saved, "Process performed successfully");
+		} catch (err) {
+			ApiResponse.InternalServerError(res, err, "Got error in Add employee");
+		}
+	})
+	.put("/employee", isAuthenticated, async (req, res) => {
+		try {
+			const saved = await employeeModel.updateEmployee(req.body);
+			ApiResponse.Created(res, saved, "Process performed successfully");
+		} catch (err) {
+			ApiResponse.InternalServerError(res, err, "Got error in Add employee");
 		}
 	});
 

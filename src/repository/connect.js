@@ -69,6 +69,16 @@ const inventoryMovSchema = Mongoose.Schema(
 	{ collection: "inventoryMov" }
 );
 
+const employeeSchema = Mongoose.Schema(
+	{
+		firstName: { type: String, required: true },
+		lastName: { type: String, required: true },
+		position: { type: String, required: true },
+		phone: { type: String },
+	},
+	{ collection: "employees" }
+);
+
 const profileSchema = Mongoose.Schema(
 	{
 		nickName: { type: String, required: true },
@@ -94,6 +104,7 @@ const orderSchema = Mongoose.Schema(
 
 const noteSchema = Mongoose.Schema(
 	{
+		noteId: { type: Number },
 		orderId: { type: Number },
 		clientName: { type: String, require: true },
 		discount: { type: Number },
@@ -109,6 +120,7 @@ let brandModel = Mongoose.model("brands", brandSchema);
 let locationModel = Mongoose.model("locations", locationSchema);
 let productModel = Mongoose.model("products", productSchema);
 let profileModel = Mongoose.model("profiles", profileSchema);
+let employeeModel = Mongoose.model("employees", employeeSchema);
 let groupModel = Mongoose.model("groups", groupSchema);
 let inventoryModel = Mongoose.model("inventory", inventorySchema);
 let inventoryMovModel = Mongoose.model("inventoryMov", inventoryMovSchema);
@@ -253,8 +265,29 @@ profileModel.updateProfile = (profile, doc) => {
 	return doc.save();
 };
 
+employeeModel.getAll = () => {
+	return employeeModel.find({});
+};
+
+employeeModel.addEmployee = (employeeToAdd) => {
+	return employeeToAdd.save();
+};
+
+employeeModel.updateEmployee = async (employee) => {
+	const doc = await employeeModel.findById(employee._id);
+
+	doc.phone = employee.phone;
+	doc.position = employee.position;
+
+	return doc.save();
+};
+
 orderModel.addOrder = (order) => {
 	return order.save();
+};
+
+orderModel.getOrders = (filter) => {
+	return orderModel.find(filter);
 };
 
 orderModel.searchByOrderId = (orderId) => {
@@ -306,4 +339,5 @@ export {
 	groupModel,
 	inventoryModel,
 	noteModel,
+	employeeModel,
 };

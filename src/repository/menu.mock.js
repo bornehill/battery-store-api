@@ -3,12 +3,12 @@ export default {
 		return new Promise((resolve) => {
 			setTimeout(() => {
 				const menu = [
-					// {
-					// 	id: 1,
-					// 	label: "Caja",
-					// 	icon: "FaCashRegister",
-					// 	path: "/cash",
-					// },
+					{
+						id: 1,
+						label: "Caja",
+						icon: "FaCashRegister",
+						path: "/cash",
+					},
 					{
 						id: 2,
 						label: "Entradas/Salidas",
@@ -38,6 +38,18 @@ export default {
 						label: "Locales",
 						icon: "MdLocationOn",
 						path: "/locations",
+					},
+					{
+						id: 7,
+						label: "Empleados",
+						icon: "MdPeople",
+						path: "/employee",
+					},
+					{
+						id: 8,
+						label: "Orden",
+						icon: "AiOutlineBook",
+						path: "/order",
 					},
 				];
 				resolve(menu);
