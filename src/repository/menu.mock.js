@@ -10,6 +10,12 @@ export default {
 						path: "/cash",
 					},
 					{
+						id: 9,
+						label: "Corte",
+						icon: "FaFileInvoiceDollar",
+						path: "/cutoff",
+					},
+					{
 						id: 2,
 						label: "Entradas/Salidas",
 						icon: "AiFillEdit",

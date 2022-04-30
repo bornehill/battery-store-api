@@ -228,6 +228,21 @@ router
 			ApiResponse.InternalServerError(res, err, "Got error in Add Note");
 		}
 	})
+	.post("/note/:noteId", isAuthenticated, async (req, res) => {
+		try {
+			const saved = await noteModel.updateNoteStatus(
+				req.params.noteId,
+				req.body.status
+			);
+			ApiResponse.Created(res, saved, "Process performed successfully");
+		} catch (err) {
+			ApiResponse.InternalServerError(
+				res,
+				err,
+				"Got error in Update Note Status"
+			);
+		}
+	})
 	.get("/employee", isAuthenticated, async (req, res) => {
 		try {
 			const employees = await employeeModel.getAll();

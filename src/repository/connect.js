@@ -305,9 +305,17 @@ orderModel.updateOrderStatus = async (orderId, status) => {
 noteModel.getNotes = async (start, end) => {
 	const sdate = moment(`${start}T00:00`);
 	const edate = moment(`${end}T00:00`);
-	return noteModel.find({
+	const notes = await noteModel.find({
 		date: { $gte: sdate.format(), $lt: edate.format() },
 	});
+
+	const notesWithOrder = [];
+	for (var note of notes) {
+		const order = await orderModel.searchByOrderId(note.orderId);
+		notesWithOrder.push({ ...note._doc, order });
+	}
+
+	return notesWithOrder;
 };
 
 noteModel.addNote = async (note, location) => {
@@ -328,6 +336,24 @@ noteModel.addNote = async (note, location) => {
 	orderDoc.save();
 
 	return noteDoc.save();
+};
+
+noteModel.updateNoteStatus = async (noteId, status) => {
+	const doc = await noteModel.findOne({ noteId });
+	const orderDoc = await orderModel.findOne({ orderId: doc.orderId });
+
+	orderDoc.detail.forEach(async (item) => {
+		const prod = { ...item.product._doc, id: item.product._doc._id };
+
+		const save = await inventoryModel.updateInventory({
+			product: prod,
+			location: "San felipe acumuladores",
+			amount: item.amount,
+		});
+	});
+
+	doc.status = status;
+	return doc.save();
 };
 
 export {
