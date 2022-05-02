@@ -1,7 +1,7 @@
 import express from "express";
 import authService from "../services/auth.service";
 import ApiResponse from "../util/ApiResponse";
-import { isAuthenticated } from "../util/authenticated";
+import { isAuthenticated, getUsers } from "../util/authenticated";
 import { profileModel } from "../repository/connect";
 
 const router = express.Router();
@@ -58,6 +58,14 @@ router
 			ApiResponse.Created(res, saved, "Process performed successfully");
 		} catch (err) {
 			ApiResponse.InternalServerError(res, err, "Got error in Add Profile");
+		}
+	})
+	.get("/users", isAuthenticated, async (req, res) => {
+		try {
+			const users = await getUsers();
+			ApiResponse.Ok(res, users, "Process performed successfully");
+		} catch (err) {
+			ApiResponse.InternalServerError(res, err, "Got error in Get users");
 		}
 	});
 

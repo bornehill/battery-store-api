@@ -5,6 +5,7 @@ import {
 	brandModel,
 	groupModel,
 	inventoryModel,
+	inventoryRequestModel,
 	locationModel,
 	orderModel,
 	productModel,
@@ -142,14 +143,38 @@ router
 	.put("/inventory", isAuthenticated, async (req, res) => {
 		try {
 			const saved = await inventoryModel.inputOutput({ ...req.body });
-			console.log(saved);
+			ApiResponse.Created(res, saved, "Process performed successfully");
+		} catch (err) {
+			ApiResponse.InternalServerError(
+				res,
+				err,
+				"Got error in Input/Output Inventory"
+			);
+		}
+	})
+	.get("/invrequest", isAuthenticated, async (req, res) => {
+		try {
+			const movs = await inventoryRequestModel.getRequests();
+			ApiResponse.Ok(res, movs, "Process performed successfully");
+		} catch (err) {
+			ApiResponse.InternalServerError(
+				res,
+				err,
+				"Got error in Get Input/Output Request"
+			);
+		}
+	})
+	.post("/invrequest", isAuthenticated, async (req, res) => {
+		const mov = inventoryRequestModel({ ...req.body });
+		try {
+			const saved = await inventoryRequestModel.add(mov);
 			ApiResponse.Created(res, saved, "Process performed successfully");
 		} catch (err) {
 			console.log(err);
 			ApiResponse.InternalServerError(
 				res,
 				err,
-				"Got error in Input/Output Inventory"
+				"Got error in Input/Output Request"
 			);
 		}
 	})
@@ -162,6 +187,22 @@ router
 				res,
 				err,
 				"Got error in Get Orders by filter"
+			);
+		}
+	})
+	.get("/orders", isAuthenticated, async (req, res) => {
+		try {
+			const orders = await orderModel.getOrdersBySeller(
+				req.query.seller,
+				req.query.start,
+				req.query.end
+			);
+			ApiResponse.Ok(res, orders, "Process performed successfully");
+		} catch (err) {
+			ApiResponse.InternalServerError(
+				res,
+				err,
+				"Got error in Get Orders by seller"
 			);
 		}
 	})
@@ -230,17 +271,10 @@ router
 	})
 	.post("/note/:noteId", isAuthenticated, async (req, res) => {
 		try {
-			const saved = await noteModel.updateNoteStatus(
-				req.params.noteId,
-				req.body.status
-			);
+			const saved = await noteModel.cancelNote(req.params.noteId);
 			ApiResponse.Created(res, saved, "Process performed successfully");
 		} catch (err) {
-			ApiResponse.InternalServerError(
-				res,
-				err,
-				"Got error in Update Note Status"
-			);
+			ApiResponse.InternalServerError(res, err, "Got error in Cancel Note");
 		}
 	})
 	.get("/employee", isAuthenticated, async (req, res) => {

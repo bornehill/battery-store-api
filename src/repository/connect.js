@@ -14,7 +14,6 @@ export const connectToDb = async () => {
 			useNewUrlParser: true,
 			useUnifiedTopology: true,
 		});
-		console.info("Connected to mongo!!!");
 	} catch (err) {
 		console.error(`Could not connect to MongoDB: ${err}`);
 	}
@@ -69,6 +68,17 @@ const inventoryMovSchema = Mongoose.Schema(
 	{ collection: "inventoryMov" }
 );
 
+const inventoryRequestSchema = Mongoose.Schema(
+	{
+		products: [
+			{ product: productSchema, amount: { type: Number, require: true } },
+		],
+		location: { type: String, require: true },
+		typeMov: { type: Number, require: true },
+	},
+	{ collection: "inventoryRequest" }
+);
+
 const employeeSchema = Mongoose.Schema(
 	{
 		firstName: { type: String, required: true },
@@ -81,9 +91,9 @@ const employeeSchema = Mongoose.Schema(
 
 const profileSchema = Mongoose.Schema(
 	{
-		nickName: { type: String, required: true },
+		nickName: { type: String },
 		role: { type: String, required: true },
-		phone: { type: String, required: true },
+		phone: { type: String },
 		userUid: { type: String, required: true, index: true },
 	},
 	{ collection: "profiles" }
@@ -112,6 +122,7 @@ const noteSchema = Mongoose.Schema(
 		status: { type: String, require: true },
 		payment: { type: String, require: true },
 		authorizationId: { type: Number },
+		noteNo: { type: Number },
 	},
 	{ collection: "notes" }
 );
@@ -124,6 +135,10 @@ let employeeModel = Mongoose.model("employees", employeeSchema);
 let groupModel = Mongoose.model("groups", groupSchema);
 let inventoryModel = Mongoose.model("inventory", inventorySchema);
 let inventoryMovModel = Mongoose.model("inventoryMov", inventoryMovSchema);
+let inventoryRequestModel = Mongoose.model(
+	"inventoryRequest",
+	inventoryRequestSchema
+);
 let orderModel = Mongoose.model("orders", orderSchema);
 let noteModel = Mongoose.model("notes", noteSchema);
 
@@ -160,20 +175,31 @@ inventoryMovModel.add = (mov) => {
 	return mov.save();
 };
 
+inventoryRequestModel.add = (mov) => {
+	return mov.save();
+};
+
+inventoryRequestModel.getRequests = () => {
+	return inventoryRequestModel.find({});
+};
+
 inventoryModel.geyByLocation = (location) => {
 	return inventoryModel.find({ location });
 };
 
-inventoryModel.inputOutput = async ({ products, location, typeMov }) => {
+inventoryModel.inputOutput = async ({ products, location, typeMov, _id }) => {
 	for (var mov of products) {
-		const amount = typeMov === "1" ? +mov.amount : +mov.amount * -1;
+		const amount = typeMov === 1 ? mov.amount : mov.amount * -1;
 
 		await inventoryModel.updateInventory({
-			product: mov.product,
+			product: { ...mov.product, id: mov.product._id },
 			location,
 			amount,
 		});
 	}
+
+	await inventoryRequestModel.remove({ _id: Mongoose.Types.ObjectId(_id) });
+
 	return "Success";
 };
 
@@ -290,6 +316,17 @@ orderModel.getOrders = (filter) => {
 	return orderModel.find(filter);
 };
 
+orderModel.getOrdersBySeller = async (sellerName, start, end) => {
+	const sdate = moment(`${start}T00:00`);
+	const edate = moment(`${end}T00:00`);
+	return await orderModel.find({
+		$and: [
+			{ sellerName },
+			{ date: { $gte: sdate.format(), $lt: edate.format() } },
+		],
+	});
+};
+
 orderModel.searchByOrderId = (orderId) => {
 	return orderModel.findOne({ orderId });
 };
@@ -338,7 +375,7 @@ noteModel.addNote = async (note, location) => {
 	return noteDoc.save();
 };
 
-noteModel.updateNoteStatus = async (noteId, status) => {
+noteModel.cancelNote = async (noteId) => {
 	const doc = await noteModel.findOne({ noteId });
 	const orderDoc = await orderModel.findOne({ orderId: doc.orderId });
 
@@ -352,7 +389,7 @@ noteModel.updateNoteStatus = async (noteId, status) => {
 		});
 	});
 
-	doc.status = status;
+	doc.status = "canceled";
 	return doc.save();
 };
 
@@ -364,6 +401,7 @@ export {
 	profileModel,
 	groupModel,
 	inventoryModel,
+	inventoryRequestModel,
 	noteModel,
 	employeeModel,
 };

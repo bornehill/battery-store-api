@@ -28,3 +28,16 @@ export async function isAuthenticated(req, res, next) {
 		return ApiResponse.Unauthorized(res, "Unauthorized");
 	}
 }
+
+export async function getUsers() {
+	try {
+		const resp = await admin.auth().listUsers();
+
+		return resp.users.map((u) => {
+			return { uid: u.uid, email: u.email };
+		});
+	} catch (err) {
+		console.error(`${err.code} -  ${err.message}`);
+		return ApiResponse.InternalServerError(res, "Internal Error getting users");
+	}
+}
