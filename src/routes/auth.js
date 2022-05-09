@@ -19,10 +19,11 @@ router
 		try {
 			const profile = await profileModel.getByUserUid(req.params.id);
 
-			const myProfile =
-				profile?.length > 0 ? { ...profile[0]._doc, id: profile._id } : null;
-
-			ApiResponse.Ok(res, myProfile, "Process performed successfully");
+			ApiResponse.Ok(
+				res,
+				{ ...profile._doc, id: profile._id },
+				"Process performed successfully"
+			);
 		} catch (err) {
 			ApiResponse.InternalServerError(
 				res,

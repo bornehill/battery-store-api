@@ -127,6 +127,16 @@ const noteSchema = Mongoose.Schema(
 	{ collection: "notes" }
 );
 
+const creditPaymentSchema = Mongoose.Schema(
+	{
+		noteId: { type: Number, require: true },
+		amount: { type: Number, require: true },
+		date: { type: Date, require: true },
+		noteNo: { type: Number },
+	},
+	{ collection: "creditPayment" }
+);
+
 let brandModel = Mongoose.model("brands", brandSchema);
 let locationModel = Mongoose.model("locations", locationSchema);
 let productModel = Mongoose.model("products", productSchema);
@@ -141,6 +151,7 @@ let inventoryRequestModel = Mongoose.model(
 );
 let orderModel = Mongoose.model("orders", orderSchema);
 let noteModel = Mongoose.model("notes", noteSchema);
+let creditPaymentModel = Mongoose.model("creditPayment", creditPaymentSchema);
 
 brandModel.getAll = () => {
 	return brandModel.find({});
@@ -231,7 +242,11 @@ inventoryModel.updateInventory = async ({
 		return added.save();
 	}
 
+	console.log(`current: ${doc.amount} mov: ${amount}`);
+
 	doc.amount = doc.amount + amount;
+
+	console.log(`result: ${doc.amount}`);
 	return doc.save();
 };
 
@@ -277,7 +292,7 @@ productModel.updateProduct = async (product) => {
 };
 
 profileModel.getByUserUid = (userUid) => {
-	return profileModel.find({ userUid });
+	return profileModel.findOne({ userUid });
 };
 
 profileModel.addProfile = (profileToAdd) => {
@@ -316,9 +331,10 @@ orderModel.getOrders = (filter) => {
 	return orderModel.find(filter);
 };
 
-orderModel.getOrdersBySeller = async (sellerName, start, end) => {
-	const sdate = moment(`${start}T00:00`);
-	const edate = moment(`${end}T00:00`);
+orderModel.getOrdersBySeller = async (sellerName, start) => {
+	const sdate = moment(`${start}T00:00`).utcOffset(0);
+	const edate = moment(`${start}T00:00`).add(1, "day").utcOffset(0);
+
 	return await orderModel.find({
 		$and: [
 			{ sellerName },
@@ -339,25 +355,8 @@ orderModel.updateOrderStatus = async (orderId, status) => {
 	return doc.save();
 };
 
-noteModel.getNotes = async (start, end) => {
-	const sdate = moment(`${start}T00:00`);
-	const edate = moment(`${end}T00:00`);
-	const notes = await noteModel.find({
-		date: { $gte: sdate.format(), $lt: edate.format() },
-	});
-
-	const notesWithOrder = [];
-	for (var note of notes) {
-		const order = await orderModel.searchByOrderId(note.orderId);
-		notesWithOrder.push({ ...note._doc, order });
-	}
-
-	return notesWithOrder;
-};
-
-noteModel.addNote = async (note, location) => {
-	const orderDoc = await orderModel.findOne({ orderId: note.orderId });
-	const noteDoc = noteModel({ ...note, date: new Date() });
+orderModel.applyOrder = async (orderId, location) => {
+	const orderDoc = await orderModel.findOne({ orderId });
 
 	orderDoc.detail.forEach(async (item) => {
 		const prod = { ...item.product._doc, id: item.product._doc._id };
@@ -371,6 +370,51 @@ noteModel.addNote = async (note, location) => {
 
 	orderDoc.status = "Closed";
 	orderDoc.save();
+};
+
+noteModel.getNotes = async (start) => {
+	const sdate = moment(`${start}T00:00`).utcOffset(0);
+	const edate = moment(`${start}T00:00`).add(1, "day").utcOffset(0);
+
+	const notes = await noteModel.find({
+		date: { $gte: sdate.format(), $lt: edate.format() },
+	});
+
+	const notesWithOrder = [];
+	for (var note of notes) {
+		const order = await orderModel.searchByOrderId(note.orderId);
+		notesWithOrder.push({ ...note._doc, order });
+	}
+
+	return notesWithOrder;
+};
+
+noteModel.getNotesByStatus = async (type) => {
+	const notes = await noteModel.find({ status: type });
+
+	const notesWithOrder = [];
+	for (var note of notes) {
+		const order = await orderModel.searchByOrderId(note.orderId);
+		notesWithOrder.push({ ...note._doc, order });
+	}
+
+	return notesWithOrder;
+};
+
+noteModel.getNoteById = async (noteId) => {
+	const note = await noteModel.find({ noteId });
+
+	const order = await orderModel.searchByOrderId(note.orderId);
+
+	return { ...note._doc, order };
+};
+
+noteModel.addNote = async (note, location) => {
+	const noteDoc = noteModel({ ...note, date: new Date() });
+
+	if (note.status !== "preauth") {
+		await orderModel.applyOrder(note.orderId, location);
+	}
 
 	return noteDoc.save();
 };
@@ -393,8 +437,44 @@ noteModel.cancelNote = async (noteId) => {
 	return doc.save();
 };
 
+noteModel.updateNoteStatus = async (noteId, status) => {
+	const doc = await noteModel.findOne({ noteId });
+
+	if (status === "payed") {
+		await orderModel.applyOrder(doc.orderId, "San felipe acumuladores");
+	}
+
+	doc.status = status;
+	return doc.save();
+};
+
+creditPaymentModel.add = async ({ noteId, noteNo, amount }) => {
+	const doc = await noteModel.findOne({ noteId });
+
+	doc.status = "payed";
+	await doc.save();
+
+	const payment = creditPaymentModel({
+		noteId,
+		amount,
+		date: new Date(),
+		noteNo,
+	});
+	return payment.save();
+};
+
+creditPaymentModel.getPaymentByDate = async (start) => {
+	const sdate = moment(`${start}T00:00`).utcOffset(0);
+	const edate = moment(`${start}T00:00`).add(1, "day").utcOffset(0);
+
+	return creditPaymentModel.find({
+		date: { $gte: sdate.format(), $lt: edate.format() },
+	});
+};
+
 export {
 	brandModel,
+	creditPaymentModel,
 	locationModel,
 	orderModel,
 	productModel,

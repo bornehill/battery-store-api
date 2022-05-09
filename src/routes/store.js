@@ -3,6 +3,7 @@ import ApiResponse from "../util/ApiResponse";
 import { isAuthenticated } from "../util/authenticated";
 import {
 	brandModel,
+	creditPaymentModel,
 	groupModel,
 	inventoryModel,
 	inventoryRequestModel,
@@ -194,8 +195,7 @@ router
 		try {
 			const orders = await orderModel.getOrdersBySeller(
 				req.query.seller,
-				req.query.start,
-				req.query.end
+				req.query.start
 			);
 			ApiResponse.Ok(res, orders, "Process performed successfully");
 		} catch (err) {
@@ -255,10 +255,30 @@ router
 	})
 	.get("/notes", isAuthenticated, async (req, res) => {
 		try {
-			const notes = await noteModel.getNotes(req.query.start, req.query.end);
+			const notes = await noteModel.getNotes(req.query.start);
 			ApiResponse.Ok(res, notes, "Process performed successfully");
 		} catch (err) {
 			ApiResponse.InternalServerError(res, err, "Got error in Get notes");
+		}
+	})
+	.get("/notes/:status", isAuthenticated, async (req, res) => {
+		try {
+			const notes = await noteModel.getNotesByStatus(req.params.status);
+			ApiResponse.Ok(res, notes, "Process performed successfully");
+		} catch (err) {
+			ApiResponse.InternalServerError(
+				res,
+				err,
+				"Got error in Get notes by status"
+			);
+		}
+	})
+	.get("/note/:noteId", isAuthenticated, async (req, res) => {
+		try {
+			const note = await noteModel.getNoteById(req.params.noteId);
+			ApiResponse.Ok(res, note, "Process performed successfully");
+		} catch (err) {
+			ApiResponse.InternalServerError(res, err, "Got error in Get Note By Id");
 		}
 	})
 	.post("/note", isAuthenticated, async (req, res) => {
@@ -269,12 +289,27 @@ router
 			ApiResponse.InternalServerError(res, err, "Got error in Add Note");
 		}
 	})
-	.post("/note/:noteId", isAuthenticated, async (req, res) => {
+	.post("/note/cancel/:noteId", isAuthenticated, async (req, res) => {
 		try {
 			const saved = await noteModel.cancelNote(req.params.noteId);
 			ApiResponse.Created(res, saved, "Process performed successfully");
 		} catch (err) {
-			ApiResponse.InternalServerError(res, err, "Got error in Cancel Note");
+			ApiResponse.InternalServerError(res, err, "Got error on Cancel Note");
+		}
+	})
+	.put("/note/status/:noteId", isAuthenticated, async (req, res) => {
+		try {
+			const saved = await noteModel.updateNoteStatus(
+				req.params.noteId,
+				req.body.status
+			);
+			ApiResponse.Created(res, saved, "Process performed successfully");
+		} catch (err) {
+			ApiResponse.InternalServerError(
+				res,
+				err,
+				"Got error on Update Note Status"
+			);
 		}
 	})
 	.get("/employee", isAuthenticated, async (req, res) => {
@@ -300,6 +335,24 @@ router
 			ApiResponse.Created(res, saved, "Process performed successfully");
 		} catch (err) {
 			ApiResponse.InternalServerError(res, err, "Got error in Add employee");
+		}
+	})
+	.get("/payment", isAuthenticated, async (req, res) => {
+		try {
+			const payments = await creditPaymentModel.getPaymentByDate(
+				req.query.start
+			);
+			ApiResponse.Ok(res, payments, "Process performed successfully");
+		} catch (err) {
+			ApiResponse.InternalServerError(res, err, "Got error in Get payments");
+		}
+	})
+	.post("/payment", isAuthenticated, async (req, res) => {
+		try {
+			const saved = await creditPaymentModel.add({ ...req.body });
+			ApiResponse.Created(res, saved, "Process performed successfully");
+		} catch (err) {
+			ApiResponse.InternalServerError(res, err, "Got error in Add payment");
 		}
 	});
 

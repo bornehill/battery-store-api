@@ -18,6 +18,13 @@ export default {
 						role: ["admin", "desktop"],
 					},
 					{
+						id: 15,
+						label: "Creditos",
+						icon: "FaRegCreditCard",
+						path: "/pay/credit",
+						role: ["admin", "desktop"],
+					},
+					{
 						id: 2,
 						label: "Entradas/Salidas",
 						icon: "AiFillEdit",
@@ -85,6 +92,20 @@ export default {
 						label: "Autorizar E/S",
 						icon: "FaUnlockAlt",
 						path: "/invrequest",
+						role: ["admin"],
+					},
+					{
+						id: 13,
+						label: "Aut. Cacelar Nota",
+						icon: "FaUnlockAlt",
+						path: "/cancel/precanceled",
+						role: ["admin"],
+					},
+					{
+						id: 14,
+						label: "Aut. Nota Casco",
+						icon: "FaUnlockAlt",
+						path: "/auth/preauth",
 						role: ["admin"],
 					},
 				];
