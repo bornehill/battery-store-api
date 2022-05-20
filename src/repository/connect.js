@@ -137,6 +137,15 @@ const creditPaymentSchema = Mongoose.Schema(
 	{ collection: "creditPayment" }
 );
 
+const serviceSchema = Mongoose.Schema(
+	{
+		description: { type: String, require: true },
+		amount: { type: Number, require: true },
+		date: { type: Date, require: true },
+	},
+	{ collection: "service" }
+);
+
 let brandModel = Mongoose.model("brands", brandSchema);
 let locationModel = Mongoose.model("locations", locationSchema);
 let productModel = Mongoose.model("products", productSchema);
@@ -152,6 +161,7 @@ let inventoryRequestModel = Mongoose.model(
 let orderModel = Mongoose.model("orders", orderSchema);
 let noteModel = Mongoose.model("notes", noteSchema);
 let creditPaymentModel = Mongoose.model("creditPayment", creditPaymentSchema);
+let serviceModel = Mongoose.model("service", serviceSchema);
 
 brandModel.getAll = () => {
 	return brandModel.find({});
@@ -332,8 +342,8 @@ orderModel.getOrders = (filter) => {
 };
 
 orderModel.getOrdersBySeller = async (sellerName, start) => {
-	const sdate = moment(`${start}T00:00`).utcOffset(0);
-	const edate = moment(`${start}T00:00`).add(1, "day").utcOffset(0);
+	const sdate = moment(`${start}T05:00`).utcOffset(0);
+	const edate = moment(`${start}T05:00`).add(1, "day").utcOffset(0);
 
 	return await orderModel.find({
 		$and: [
@@ -373,8 +383,8 @@ orderModel.applyOrder = async (orderId, location) => {
 };
 
 noteModel.getNotes = async (start) => {
-	const sdate = moment(`${start}T00:00`).utcOffset(0);
-	const edate = moment(`${start}T00:00`).add(1, "day").utcOffset(0);
+	const sdate = moment(`${start}T05:00`).utcOffset(0);
+	const edate = moment(`${start}T05:00`).add(1, "day").utcOffset(0);
 
 	const notes = await noteModel.find({
 		date: { $gte: sdate.format(), $lt: edate.format() },
@@ -464,12 +474,27 @@ creditPaymentModel.add = async ({ noteId, noteNo, amount }) => {
 };
 
 creditPaymentModel.getPaymentByDate = async (start) => {
-	const sdate = moment(`${start}T00:00`).utcOffset(0);
-	const edate = moment(`${start}T00:00`).add(1, "day").utcOffset(0);
+	const sdate = moment(`${start}T05:00`).utcOffset(0);
+	const edate = moment(`${start}T05:00`).add(1, "day").utcOffset(0);
 
 	return creditPaymentModel.find({
 		date: { $gte: sdate.format(), $lt: edate.format() },
 	});
+};
+
+serviceModel.getServiceByDate = async (start) => {
+	const sdate = moment(`${start}T05:00`).utcOffset(0);
+	const edate = moment(`${start}T05:00`).add(1, "day").utcOffset(0);
+
+	return serviceModel.find({
+		date: { $gte: sdate.format(), $lt: edate.format() },
+	});
+};
+
+serviceModel.add = (data) => {
+	const serviceDoc = serviceModel({ ...data, date: new Date() });
+
+	return serviceDoc.save();
 };
 
 export {
@@ -484,4 +509,5 @@ export {
 	inventoryRequestModel,
 	noteModel,
 	employeeModel,
+	serviceModel,
 };

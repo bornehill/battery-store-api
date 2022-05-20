@@ -12,6 +12,7 @@ import {
 	productModel,
 	noteModel,
 	employeeModel,
+	serviceModel,
 } from "../repository/connect";
 
 const router = express.Router();
@@ -353,6 +354,23 @@ router
 			ApiResponse.Created(res, saved, "Process performed successfully");
 		} catch (err) {
 			ApiResponse.InternalServerError(res, err, "Got error in Add payment");
+		}
+	})
+	.get("/service", isAuthenticated, async (req, res) => {
+		try {
+			const payments = await serviceModel.getServiceByDate(req.query.start);
+			ApiResponse.Ok(res, payments, "Process performed successfully");
+		} catch (err) {
+			console.log(err.message);
+			ApiResponse.InternalServerError(res, err, "Got error in Get service");
+		}
+	})
+	.post("/service", isAuthenticated, async (req, res) => {
+		try {
+			const saved = await serviceModel.add({ ...req.body });
+			ApiResponse.Created(res, saved, "Process performed successfully");
+		} catch (err) {
+			ApiResponse.InternalServerError(res, err, "Got error in Add service");
 		}
 	});
 

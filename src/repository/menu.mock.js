@@ -25,6 +25,13 @@ export default {
 						role: ["admin", "desktop"],
 					},
 					{
+						id: 16,
+						label: "Servicios",
+						icon: "FaTools",
+						path: "/service",
+						role: ["admin", "desktop"],
+					},
+					{
 						id: 2,
 						label: "Entradas/Salidas",
 						icon: "AiFillEdit",

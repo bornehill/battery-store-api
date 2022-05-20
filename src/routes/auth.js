@@ -21,7 +21,7 @@ router
 
 			ApiResponse.Ok(
 				res,
-				{ ...profile._doc, id: profile._id },
+				{ ...profile?._doc, id: profile?._id },
 				"Process performed successfully"
 			);
 		} catch (err) {
